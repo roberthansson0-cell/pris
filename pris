@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prisräknare</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; padding: 0; background: #f4f4f9; }
+    h1 { text-align: center; }
+    .container { max-width: 500px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+    label { display: block; margin-top: 15px; }
+    input, select, button { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px; }
+    button { background: #28a745; color: white; font-weight: bold; cursor: pointer; }
+    button:hover { background: #218838; }
+    .result { margin-top: 20px; padding: 10px; background: #eef; border-radius: 5px; }
+    .toggle { margin-top: 15px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>💰 Prisräknare</h1>
+    
+    <label for="productName">Varunamn:</label>
+    <input type="text" id="productName" placeholder="Skriv varans namn...">
+
+    <label for="inkop">Inköpspris (kr):</label>
+    <input type="number" id="inkop" placeholder="t.ex. 100">
+
+    <label for="moms">Moms (%):</label>
+    <select id="moms">
+      <option value="25">25%</option>
+      <option value="12">12%</option>
+      <option value="6">6%</option>
+    </select>
+
+    <label for="profitPercent">Vinst (%):</label>
+    <input type="number" id="profitPercent" placeholder="t.ex. 20">
+
+    <label for="profitKr">Vinst (kr):</label>
+    <input type="number" id="profitKr" placeholder="eller skriv kr direkt">
+
+    <label for="antal">Antal varor:</label>
+    <input type="number" id="antal" placeholder="t.ex. 10">
+
+    <div class="toggle">
+      <label><input type="checkbox" id="showWithMoms" checked> Visa priser med moms</label>
+    </div>
+
+    <button onclick="rakna()">Räkna ut</button>
+    <button onclick="dela()">Dela resultat</button>
+
+    <div class="result" id="resultat"></div>
+  </div>
+
+  <script>
+    function rakna() {
+      const namn = document.getElementById("productName").value || "Okänd vara";
+      const inkop = parseFloat(document.getElementById("inkop").value) || 0;
+      const moms = parseFloat(document.getElementById("moms").value) || 25;
+      const profitPercent = parseFloat(document.getElementById("profitPercent").value) || 0;
+      const profitKr = parseFloat(document.getElementById("profitKr").value) || 0;
+      const antal = parseInt(document.getElementById("antal").value) || 1;
+      const showWithMoms = document.getElementById("showWithMoms").checked;
+
+      let vinst = profitKr > 0 ? profitKr : (inkop * profitPercent / 100);
+      let prisExMoms = inkop + vinst;
+      let prisInklMoms = prisExMoms * (1 + moms/100);
+
+      let totalVinst = vinst * antal;
+      let totalInkop = inkop * antal;
+      let totalPrisExMoms = prisExMoms * antal;
+      let totalPrisInklMoms = prisInklMoms * antal;
+
+      const prisAttVisa = showWithMoms ? prisInklMoms : prisExMoms;
+      const totalPrisAttVisa = showWithMoms ? totalPrisInklMoms : totalPrisExMoms;
+
+      let text = `
+        📦 Vara: ${namn}<br>
+        🛒 Inköpspris: ${inkop.toFixed(2)} kr<br>
+        💵 Försäljningspris (${showWithMoms ? "inkl. moms" : "exkl. moms"}): ${prisAttVisa.toFixed(2)} kr<br>
+        📊 Vinst per vara: ${vinst.toFixed(2)} kr<br>
+        🔢 Antal: ${antal}<br>
+        💰 Total försäljning: ${totalPrisAttVisa.toFixed(2)} kr<br>
+        📈 Total vinst: ${totalVinst.toFixed(2)} kr
+      `;
+      document.getElementById("resultat").innerHTML = text;
+    }
+
+    function dela() {
+      const res = document.getElementById("resultat").innerText;
+      if (navigator.share) {
+        navigator.share({
+          title: "Prisräknare",
+          text: res
+        });
+      } else {
+        alert("Delning stöds inte på den här enheten. Kopiera texten manuellt:\n\n" + res);
+      }
+    }
+  </script>
+</body>
+</html>
